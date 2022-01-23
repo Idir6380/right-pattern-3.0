@@ -7,7 +7,7 @@ int Lost(int score)
 {   int o=0;
     int t[4]={0,1,2,3};
     // Initialize SDL
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
 
     // Create a SDL window
     SDL_Window *windowmenu = SDL_CreateWindow("LOOSE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200,900, SDL_WINDOW_MOUSE_FOCUS);
@@ -23,7 +23,7 @@ int Lost(int score)
     SDL_Event event;
      SDL_Rect winrect={447,277,300,100};
      sprintf(result,"score:%d",score);
-     txt=loadttf(result,renderer,40,255, 255, 255);
+     txt=loadttf(result,renderer,100,255, 255, 255);
       SDL_RenderCopy(renderer,txt,NULL,&winrect);
       SDL_RenderPresent(renderer);
     while(running==true && button == 0 )

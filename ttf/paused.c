@@ -7,10 +7,10 @@ int paused(int score,int p,SDL_Window *window,int chkoukou)
 {   int o=0;
     int t[4]={0,1,2,3};
     // Initialize SDL
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
 
     // Create a SDL window
-    SDL_Window *windowmenu = SDL_CreateWindow("pause", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200,900, SDL_WINDOW_MOUSE_FOCUS);
+    SDL_Window *windowmenu = SDL_CreateWindow("Pause", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200,900, SDL_WINDOW_MOUSE_FOCUS);
 
     // Create a renderer (accelerated and in sync with the display refresh rate)
     SDL_Renderer *renderer = SDL_CreateRenderer(windowmenu, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);

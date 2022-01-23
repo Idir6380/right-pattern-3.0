@@ -13,7 +13,7 @@ void SDL_ExitWithError(const char *message)
     exit(EXIT_FAILURE);
 }
 void SDL_ExitWithError(const char *message);
-int cpu(int argc, char *argv[])
+int cpu()
 {
     int p=0;
     size_t x1,y1;
@@ -65,6 +65,8 @@ affichmat(num);
     TTF_Init();
     //creer un rectangle pour GO
     SDL_Rect gorect={580,0,100,100};
+    //creer un rectangle pour pause
+    SDL_Rect pausrect={0,0,100,100};
     //rectangle pour le timer
     SDL_Rect timerrect={450,0,300,120};
     //
@@ -78,7 +80,7 @@ printf("\n");
     affichevecteur(k);
     affichmat(num);
     //Création fenêtre
-    window = SDL_CreateWindow("Première fenêtre SDL 2",SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 1000, 0 );
+    window = SDL_CreateWindow("cpu",SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 1000, 0 );
     if(window == NULL)
         SDL_ExitWithError("Creation fenetre echouee");
     /*------------------------------------------------------------*/
@@ -97,8 +99,11 @@ printf("\n");
     printf("TTF_Init: %s\n", TTF_GetError());
     exit(2);
 }
-     txt=loadttf("GO!!",pRenderer,40,251, 255, 226);
+     txt=loadttf("GO!!",pRenderer,100,251, 255, 226);
       SDL_RenderCopy(pRenderer,txt,NULL,&gorect);
+      SDL_RenderPresent(pRenderer);
+      txt=loadttf("PAUSE",pRenderer,100,251, 255, 226);
+      SDL_RenderCopy(pRenderer,txt,NULL,&pausrect);
       SDL_RenderPresent(pRenderer);
     //dessinner la matrice pleine
                 for(int i=290;i<891;i=i+103){
@@ -147,22 +152,22 @@ printf("\n");
     for(int j=0;j<36;j++){
         tab[j]=1;
     }
+    int chkoukou=2;
+    int temps=150;
      while(quit==false &&p  == 0 ){
 
            currentTime = SDL_GetTicks();
-      if ((currentTime > lastTime + 1000 && 150-(currentTime/1000)>0) && count!=36 ) {
-         sprintf(result,"score:%d♠time:%03d",score,150-(currentTime/1000));
+      if ((currentTime > lastTime + 1000 && (currentTime/1000)%1 == 0) && chkoukou==2 &&count<36 ) {
+         sprintf(result,"score:%d♠time:%03d",score,temps);
          SDL_SetRenderDrawColor(pRenderer,40, 100, 204, 255);
          SDL_RenderFillRect(pRenderer,&timerrect);
          tme=loadttf(result,pRenderer,40,251, 255, 226);
          SDL_RenderCopy(pRenderer,tme,NULL,&timerrect);
          SDL_RenderPresent(pRenderer);
          tme=NULL;
+         temps--;
          score=score-3;
          lastTime = currentTime;
-
-
-                    if((currentTime/100)%1==0 ){
                          q=(rand()%36);
                          s=q/6;
 
@@ -178,7 +183,7 @@ printf("\n");
                     count++;
                     SDL_SetRenderDrawColor(pRenderer,255,255,255,255);
                     SDL_RenderDrawLine(pRenderer,((q%6)*103)+290,(s*103)+353,((q%6)*103)+393,(s*103)+250);
-                }
+
 
          }
 
@@ -189,33 +194,65 @@ printf("\n");
 
             switch(event.type){
               case SDL_QUIT:
+                  quit = true;
                   SDL_DestroyWindow(window);
-                  partie();
-                quit = true;
+
                 break;
+                 case SDL_MOUSEBUTTONUP:
+
+                x1=event.motion.x;
+                y1=event.motion.y;
+             printf("%d %d \n",x1,y1);
+             //pause
+             if((x1>=0 && x1<=100)&&(y1>=0 && y1<=100)){
+               chkoukou=-1;
+                     SDL_HideWindow(window);
+                     q=paused(score,p,window,chkoukou);
+                     if(q==2){
+
+                        chkoukou=2;
+                      }
+                      if(q==1){
+
+                        TTF_Quit();
+                        SDL_DestroyWindow(window);
+                        SDL_Quit();
+                        cpu();
+                      }
+                      if(q==0){
+                       TTF_Quit();
+                        SDL_DestroyWindow(window);
+                        SDL_Quit();
+
+                      }
+                     }
 
             }
         }
         if(count>=36){
-          wintxt=loadttf("GG!",pRenderer,200,0,0,0);
+          wintxt=loadttf("GG!",pRenderer,200,251, 255, 226);
           SDL_RenderCopy(pRenderer,wintxt,NULL,&winrect);
           SDL_RenderPresent(pRenderer);
+          SDL_Delay(2000);
+          TTF_Quit();
+          SDL_DestroyWindow(window);
+          SDL_Quit();
+
        }
-       if(150-(currentTime/1000) == 0 && count!=36){
-          wintxt=loadttf("CPU lost!",pRenderer,200,0,0,0);
+       if(temps == 0 && count!=36){
+          wintxt=loadttf("CPU lost!",pRenderer,200,251, 255, 226);
           SDL_RenderCopy(pRenderer,wintxt,NULL,&winrect);
           SDL_RenderPresent(pRenderer);
           p=1;
-    SDL_Delay(5000);
+    SDL_Delay(2000);
     TTF_Quit();
     SDL_DestroyWindow(window);
     SDL_Quit();
+
        }
     }
 
      //-----------
-
-    partie();
     return p;
 }
 

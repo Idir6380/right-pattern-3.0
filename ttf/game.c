@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include <SDL2/SDL_ttf.h>
+#include<SDL2/SDL_mixer.h>
 #include "ttffonc.h"
 #include "verifie.h"
 #include "affichage.h"
@@ -60,7 +61,9 @@ affichmat(num);
     //creer un rectangle pour GO
     SDL_Rect gorect={580,0,100,100};
     //creer un rectangle pour pause
-    SDL_Rect pausrect={0,0,100,100};
+    SDL_Rect pausrect={100,0,100,100};
+     //creer un rectangle pour mute
+    SDL_Rect muterect={1000,0,100,100};
     //rectangle pour le timer
     SDL_Rect timerrect={450,0,300,120};
     //
@@ -68,13 +71,20 @@ affichmat(num);
     SDL_Renderer *pRenderer = NULL;
     SDL_Texture* txt = NULL;//texture
     //Lancement SDL
-    if(SDL_Init(SDL_INIT_VIDEO) != 0)
-        SDL_ExitWithError("Initialisation SDL");
-printf("\n");
+  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
+  //initialiser sdl mixer
+  Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048);
+  // charger le fichier audio
+  Mix_Music *music= Mix_LoadMUS("play1.mp3");
+  if(music==NULL){
+    printf("eror");
+  }
+
+
     affichevecteur(k);
     affichmat(num);
     //Création fenêtre
-    window = SDL_CreateWindow("Première fenêtre SDL 2",SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 1000, 0 );
+    window = SDL_CreateWindow("PLAY",SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 1000, 0 );
     if(window == NULL)
         SDL_ExitWithError("Creation fenetre echouee");
     /*------------------------------------------------------------*/
@@ -98,6 +108,9 @@ printf("\n");
       SDL_RenderPresent(pRenderer);
       txt=loadttf("PAUSE",pRenderer,40,251, 255, 226);
       SDL_RenderCopy(pRenderer,txt,NULL,&pausrect);
+      SDL_RenderPresent(pRenderer);
+       txt=loadttf("mute",pRenderer,40,251, 255, 226);
+      SDL_RenderCopy(pRenderer,txt,NULL,&muterect);
       SDL_RenderPresent(pRenderer);
     //dessinner la matrice pleine
                 for(int i=290;i<891;i=i+103){
@@ -140,7 +153,9 @@ printf("\n");
     bool quit = false;
     char result[50];
     SDL_Texture *tme;
-
+    int mute=0;
+    //jouer la music
+   Mix_PlayMusic(music,-1);
      while(quit==false &&p  == 0){
 
            currentTime = SDL_GetTicks();
@@ -162,6 +177,7 @@ printf("\n");
 
             switch(event.type){
               case SDL_QUIT:
+                  Mix_CloseAudio();
                    SDL_DestroyWindow(window);
                   partie();
                 quit = true;
@@ -171,28 +187,54 @@ printf("\n");
                 x1=event.motion.x;
                 y1=event.motion.y;
              printf("%d %d \n",x1,y1);
-               if((x1>=0 && x1<=100)&&(y1>=0 && y1<=100)){
+             //pause
+               if((x1>=100 && x1<=200)&&(y1>=0 && y1<=100)){
                chkoukou=-1;
+               Mix_PauseMusic();
                      SDL_HideWindow(window);
                      q=paused(score,p,window,chkoukou);
                      if(q==2){
 
                         chkoukou=2;
+                        Mix_ResumeMusic();
                       }
                       if(q==1){
 
                         TTF_Quit();
+                        Mix_FreeMusic(music);
                         SDL_DestroyWindow(window);
                         SDL_Quit();
                         game();
                       }
                       if(q==0){
                        TTF_Quit();
+                       Mix_FreeMusic(music);
                         SDL_DestroyWindow(window);
                         SDL_Quit();
                         partie();
                       }
                      }
+                     if(((x1>=1000&&x1<=1100)&&(y1>=0 && y1<=100))){
+                                 if(mute%2==0){
+                                    printf("%d",mute);
+                                Mix_PauseMusic();
+                                SDL_SetRenderDrawColor(pRenderer,0,0,0,225);
+                                SDL_RenderDrawLine(pRenderer,1000,0,1100,100);
+                                SDL_RenderDrawLine(pRenderer,1100,0,1000,100);
+                                 }
+                                  if(mute%2==1){
+                                    printf("%d",mute);
+                                Mix_ResumeMusic();
+                                SDL_SetRenderDrawColor(pRenderer,40, 174, 204,225);
+                                SDL_RenderDrawLine(pRenderer,1000,0,1100,100);
+                                SDL_RenderDrawLine(pRenderer,1100,0,1000,100);
+                                txt=loadttf("mute",pRenderer,40,251, 255, 226);
+                                SDL_RenderCopy(pRenderer,txt,NULL,&muterect);
+                                SDL_RenderPresent(pRenderer);
+                            }
+                            mute++;
+                     }
+
              //premiere ligne
              //bouton 1 1
              if((x1>=290 && x1<=390)&&(y1>=250 && y1<=350)){
@@ -1155,6 +1197,7 @@ printf("\n");
           SDL_RenderPresent(pRenderer);
           SDL_Delay(300);
           TTF_Quit();
+          Mix_FreeMusic(music);
           SDL_DestroyWindow(window);
           SDL_Quit();
           int p=0;
@@ -1168,6 +1211,7 @@ printf("\n");
 
         SDL_Delay(300);
         TTF_Quit();
+        Mix_FreeMusic(music);
         SDL_DestroyWindow(window);
         SDL_Quit();
         Lost(score);
@@ -1175,8 +1219,9 @@ printf("\n");
     }
      //-----------
     TTF_Quit();
+    Mix_FreeMusic(music);
     SDL_DestroyWindow(window);
-    SDL_Quit();
+
     return p;
 }
 

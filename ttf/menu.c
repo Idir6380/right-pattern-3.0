@@ -7,7 +7,7 @@ int menu(int argc, char *argv[])
 {   int o=0;
     int t[4]={0,1,2,3};
     // Initialize SDL
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
 
     // Create a SDL window
     SDL_Window *windowmenu = SDL_CreateWindow("GAME", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200,900, SDL_WINDOW_MOUSE_FOCUS);
